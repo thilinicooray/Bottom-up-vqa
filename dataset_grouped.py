@@ -228,10 +228,8 @@ class VQAFeatureDataset(Dataset):
 
             tot_features.append(features)
             tot_spatials.append(spatials)
-            tot_questions.append(question)
+            tot_questions.append(torch.tensor(question))
             tot_targets.append(target)
-
-        a = torch.stack(tot_features,0)
 
         return torch.stack(tot_features,0), torch.stack(tot_spatials,0), torch.stack(tot_questions,0), torch.stack(tot_targets,0)
 
