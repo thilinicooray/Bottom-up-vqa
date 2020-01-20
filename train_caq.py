@@ -81,22 +81,26 @@ def evaluate(model, dataloader):
     score = 0
     upper_bound = 0
     num_data = 0
-    for v, b, q, a, m in iter(dataloader):
-        v = Variable(v, volatile=True).cuda()
-        b = Variable(b, volatile=True).cuda()
-        q = Variable(q, volatile=True).cuda()
-        m = Variable(m).cuda()
 
-        v = v.contiguous().view(-1, v.size(2), v.size(3))
-        b = b.contiguous().view(-1, b.size(2), b.size(3))
-        q = q.contiguous().view(-1, q.size(2))
-        a = a.contiguous().view(-1, a.size(2))
+    with torch.no_grad():
+        for v, b, q, a, m in iter(dataloader):
+            v = Variable(v).cuda()
+            b = Variable(b).cuda()
+            q = Variable(q).cuda()
+            m = Variable(m).cuda()
 
-        pred = model(v, b, q, None, m)
-        batch_score = compute_score_with_logits(pred, a.cuda()).sum()
-        score += batch_score
-        upper_bound += (a.max(1)[0]).sum()
-        num_data += pred.size(0)
+            v = v.contiguous().view(-1, v.size(2), v.size(3))
+            b = b.contiguous().view(-1, b.size(2), b.size(3))
+            q = q.contiguous().view(-1, q.size(2))
+            a = a.contiguous().view(-1, a.size(2))
+
+            pred = model(v, b, q, None, m)
+            batch_score = compute_score_with_logits(pred, a.cuda()).sum()
+            score += batch_score
+            upper_bound += (a.max(1)[0]).sum()
+            num_data += pred.size(0)
+
+            break
 
     score = score / len(dataloader.dataset)
     upper_bound = upper_bound / len(dataloader.dataset)

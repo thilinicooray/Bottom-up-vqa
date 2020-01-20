@@ -94,6 +94,8 @@ class CAQModel(nn.Module):
         v_repr = self.v_net(v_emb)
         joint_repr = q_repr * v_repr
 
+        print('joint_repr ', joint_repr.size())
+
         #CAQ
 
         cur_group = joint_repr.contiguous().view(-1, self.dataset.max_q_count, joint_repr.size(-1))
@@ -101,8 +103,6 @@ class CAQModel(nn.Module):
         neighbours, _ = self.neighbour_attention(cur_group, cur_group, cur_group, mask=mask)
 
         withctx = neighbours.contiguous().view(v.size(0), -1)
-
-        print(withctx.size(), 'ctx size')
 
         updated_q_emb = self.Dropout_C(self.updated_query_composer(torch.cat([withctx, q_emb], -1)))
 

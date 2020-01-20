@@ -361,8 +361,6 @@ class VQAFeatureDataset_withmask(Dataset):
             cur_idx = len(entries) + idx
             adj[cur_idx][cur_idx] = 1
 
-        print(len(entries), adj)
-
         return torch.stack(tot_features,0), torch.stack(tot_spatials,0), torch.stack(tot_questions,0), torch.stack(tot_targets,0), adj.type(torch.FloatTensor)
 
     def __len__(self):
