@@ -58,7 +58,7 @@ def train(model, train_loader, eval_loader, num_epochs, output):
             train_score += batch_score
 
             if total_steps % 4 == 0:
-                logger.write('\ttrain_loss: %.2f, steps:%.2f ' % (total_loss, total_steps))
+                logger.write('train_loss: %.2f, steps:%.2f ' % (total_loss, total_steps))
 
                 model.train(False)
                 eval_score, bound = evaluate(model, eval_loader)
@@ -96,7 +96,7 @@ def evaluate(model, dataloader):
             v = v.contiguous().view(-1, v.size(2), v.size(3))
             b = b.contiguous().view(-1, b.size(2), b.size(3))
             q = q.contiguous().view(-1, q.size(2))
-
+            a = a.contiguous().view(-1, a.size(2))
 
             pred = model(v, b, q, None)
             batch_score = compute_score_with_logits(pred, a.cuda()).sum()

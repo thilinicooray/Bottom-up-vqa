@@ -58,12 +58,9 @@ def train(model, train_loader, eval_loader, num_epochs, output):
             total_loss += loss.item() * v.size(0)
             train_score += batch_score
 
-            if total_steps % 4 == 0:
-                logger.write('\ttrain_loss: %.2f, steps:%.2f ' % (total_loss, total_steps))
+            if total_steps % 500 == 0:
+                logger.write('train_loss: %.2f, steps:%.2f ' % (total_loss, total_steps))
 
-                model.train(False)
-                eval_score, bound = evaluate(model, eval_loader)
-                model.train(True)
 
 
         total_loss /= len(train_loader.dataset)
