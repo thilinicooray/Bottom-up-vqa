@@ -7,7 +7,7 @@ import re
 import _pickle as cPickle
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from dataset import Dictionary
+#from dataset import Dictionary
 import utils
 
 
