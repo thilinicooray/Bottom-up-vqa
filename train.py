@@ -44,12 +44,10 @@ def train(model, train_loader, eval_loader, num_epochs, output):
             q = q.contiguous().view(-1, q.size(2))
             a = a.contiguous().view(-1, a.size(2))
 
-            print('size check ', v.size(), b.size(), q.size(), a.size())
-
             pred = model(v, b, q, a)
             loss = instance_bce_with_logits(pred, a)
             loss.backward()
-            nn.utils.clip_grad_norm(model.parameters(), 0.25)
+            nn.utils.clip_grad_norm_(model.parameters(), 0.25)
             optim.step()
             optim.zero_grad()
 
