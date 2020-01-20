@@ -128,11 +128,11 @@ def build_caq(dataset, num_hid):
 def build_caq_newatt(dataset, num_hid):
     w_emb = WordEmbedding(dataset.dictionary.ntoken, 300, 0.0)
     q_emb = QuestionEmbedding(300, num_hid, 1, False, 0.0)
-    v_att = NewAttention(dataset.v_dim, q_emb.num_hid, num_hid)
+    v_att = Attention(dataset.v_dim, q_emb.num_hid, num_hid)
     q_net = FCNet([q_emb.num_hid, num_hid])
     v_net = FCNet([dataset.v_dim, num_hid])
     updated_query_composer = FCNet([num_hid * 2, num_hid])
-    neighbour_attention = MultiHeadedAttention(4, num_hid//2, dropout=0.1)
+    neighbour_attention = MultiHeadedAttention(4, num_hid, dropout=0.1)
     Dropout_C = nn.Dropout(0.1)
 
 
