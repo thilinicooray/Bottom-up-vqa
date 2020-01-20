@@ -142,7 +142,7 @@ def filter_answers(answers_dset, min_occurence):
         if gtruth not in occurence:
             occurence[gtruth] = set()
         occurence[gtruth].add(ans_entry['question_id'])
-    for answer in occurence.keys():
+    for answer in list(occurence):
         if len(occurence[answer]) < min_occurence:
             occurence.pop(answer)
 
