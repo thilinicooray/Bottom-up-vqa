@@ -98,7 +98,7 @@ class CAQModel(nn.Module):
 
         #CAQ
 
-        cur_group = joint_repr.contiguous().view(-1, self.dataset.max_q_count, joint_repr.size(-1))
+        cur_group = joint_repr.contiguous().view(mask.size(0), -1, joint_repr.size(-1))
 
         neighbours, _ = self.neighbour_attention(cur_group, cur_group, cur_group, mask=mask)
 
