@@ -35,6 +35,9 @@ class BaseModel(nn.Module):
         v_repr = self.v_net(v_emb)
         joint_repr = q_repr * v_repr
         logits = self.classifier(joint_repr)
+
+        torch.cuda.empty_cache()
+
         return logits
 
 

@@ -111,6 +111,9 @@ class CAQModel(nn.Module):
         joint_repr = q_repr * v_repr
 
         logits = self.classifier(joint_repr)
+
+        torch.cuda.empty_cache()
+
         return logits
 
 
