@@ -39,6 +39,11 @@ def train(model, train_loader, eval_loader, num_epochs, output):
             q = Variable(q).cuda()
             a = Variable(a).cuda()
 
+            v = v.contiguous().view(-1, v.size(2), v.size(3))
+            b = b.contiguous().view(-1, b.size(2), b.size(3))
+            q = q.contiguous().view(-1, q.size(2))
+            a = a.contiguous().view(-1, q.size(2))
+
             print('size check ', v.size(), b.size(), q.size(), a.size())
 
             pred = model(v, b, q, a)
