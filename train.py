@@ -39,6 +39,8 @@ def train(model, train_loader, eval_loader, num_epochs, output):
             q = Variable(q).cuda()
             a = Variable(a).cuda()
 
+            print('size check ', v.size(), b.size(), q.size(), a.size())
+
             pred = model(v, b, q, a)
             loss = instance_bce_with_logits(pred, a)
             loss.backward()
