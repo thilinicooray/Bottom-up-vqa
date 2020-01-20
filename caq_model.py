@@ -94,8 +94,6 @@ class CAQModel(nn.Module):
         v_repr = self.v_net(v_emb)
         joint_repr = q_repr * v_repr
 
-        print('joint_repr ', joint_repr.size())
-
         #CAQ
 
         cur_group = joint_repr.contiguous().view(mask.size(0), -1, joint_repr.size(-1))
@@ -134,7 +132,7 @@ def build_caq_newatt(dataset, num_hid):
     q_net = FCNet([q_emb.num_hid, num_hid])
     v_net = FCNet([dataset.v_dim, num_hid])
     updated_query_composer = FCNet([num_hid * 2, num_hid])
-    neighbour_attention = MultiHeadedAttention(4, num_hid, dropout=0.1)
+    neighbour_attention = MultiHeadedAttention(4, num_hid//2, dropout=0.1)
     Dropout_C = nn.Dropout(0.1)
 
 
