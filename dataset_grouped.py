@@ -235,3 +235,135 @@ class VQAFeatureDataset(Dataset):
 
     def __len__(self):
         return len(self.img2q)
+
+class VQAFeatureDataset_withmask(Dataset):
+    def __init__(self, name, dictionary, dataroot='data'):
+        super(VQAFeatureDataset_withmask, self).__init__()
+        assert name in ['train', 'val']
+
+        ans2label_path = os.path.join(dataroot, 'cache', 'trainval_ans2label.pkl')
+        label2ans_path = os.path.join(dataroot, 'cache', 'trainval_label2ans.pkl')
+        self.ans2label = cPickle.load(open(ans2label_path, 'rb'))
+        self.label2ans = cPickle.load(open(label2ans_path, 'rb'))
+        self.num_ans_candidates = len(self.ans2label)
+
+        self.dictionary = dictionary
+
+        self.img_id2idx = cPickle.load(
+            open(os.path.join(dataroot, '%s36_imgid2idx.pkl' % name), 'rb'))
+        print('loading features from h5 file')
+        h5_path = os.path.join(dataroot, '%s36.hdf5' % name)
+        with h5py.File(h5_path, 'r') as hf:
+            self.features = np.array(hf.get('image_features'))
+            self.spatials = np.array(hf.get('spatial_features'))
+
+        self.entries, self.img2q = _load_dataset(dataroot, name, self.img_id2idx)
+        self.max_q_count = _get_maxq_count(self.img2q)
+
+        self.tokenize()
+        self.tensorize()
+        self.v_dim = self.features.size(2)
+        self.s_dim = self.spatials.size(2)
+
+        self.ids = list(self.img2q.keys())
+
+    def tokenize(self, max_length=14):
+        """Tokenizes the questions.
+
+        This will add q_token in each entry of the dataset.
+        -1 represent nil, and should be treated as padding_idx in embedding
+        """
+        for entry in self.entries:
+            tokens = self.dictionary.tokenize(entry['question'], False)
+            tokens = tokens[:max_length]
+            if len(tokens) < max_length:
+                # Note here we pad in front of the sentence
+                padding = [self.dictionary.padding_idx] * (max_length - len(tokens))
+                tokens = padding + tokens
+            utils.assert_eq(len(tokens), max_length)
+            entry['q_token'] = tokens
+
+    def tensorize(self):
+        self.features = torch.from_numpy(self.features)
+        self.spatials = torch.from_numpy(self.spatials)
+
+        for entry in self.entries:
+            question = torch.from_numpy(np.array(entry['q_token']))
+            entry['q_token'] = question
+
+            answer = entry['answer']
+            labels = np.array(answer['labels'])
+            scores = np.array(answer['scores'], dtype=np.float32)
+            if len(labels):
+                labels = torch.from_numpy(labels)
+                scores = torch.from_numpy(scores)
+                entry['answer']['labels'] = labels
+                entry['answer']['scores'] = scores
+            else:
+                entry['answer']['labels'] = None
+                entry['answer']['scores'] = None
+
+    def __getitem__(self, index):
+
+        _id = self.ids[index]
+        entries = self.img2q[_id]
+
+        tot_features = []
+        tot_spatials = []
+        tot_questions = []
+        tot_targets = []
+        max_length = 14
+
+        for entry_id in entries:
+            entry = self.entries[entry_id]
+            features = self.features[entry['image']]
+            spatials = self.spatials[entry['image']]
+
+            question = entry['q_token']
+            answer = entry['answer']
+            labels = answer['labels']
+            scores = answer['scores']
+            target = torch.zeros(self.num_ans_candidates + 1)
+            if labels is not None:
+                target.scatter_(0, labels, scores)
+
+            tot_features.append(features)
+            tot_spatials.append(spatials)
+            tot_questions.append(question)
+            tot_targets.append(target)
+
+        padding_count = self.max_q_count - len(entries)
+
+        for i in range(padding_count):
+            entry = self.entries[-1]
+            features = self.features[entry['image']]
+            spatials = self.spatials[entry['image']]
+
+            question = [self.dictionary.padding_idx] * max_length
+            target = torch.zeros(self.num_ans_candidates + 1)
+            target[-1] = 1.0
+
+            tot_features.append(features)
+            tot_spatials.append(spatials)
+            tot_questions.append(torch.tensor(question))
+            tot_targets.append(target)
+
+        imgq_encoding = torch.zeros(self.max_q_count)
+        imgq_encoding[:len(entries)] = 1
+
+        encoding_tensor = torch.unsqueeze(imgq_encoding.clone().detach(), 0)
+        expanded = encoding_tensor.expand(self.max_q_count, encoding_tensor.size(1))
+        transpose = torch.t(expanded)
+        adj = expanded*transpose
+        for idx1 in range(0,len(entries)):
+            adj[idx1][idx1] = 0
+        for idx in range(0,padding_count):
+            cur_idx = len(entries) + idx
+            adj[cur_idx][cur_idx] = 1
+
+        print(len(entries), adj)
+
+        return torch.stack(tot_features,0), torch.stack(tot_spatials,0), torch.stack(tot_questions,0), torch.stack(tot_targets,0), adj.type(torch.FloatTensor)
+
+    def __len__(self):
+        return len(self.img2q)
