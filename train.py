@@ -27,6 +27,7 @@ def train(model, train_loader, eval_loader, num_epochs, output):
     optim = torch.optim.Adamax(model.parameters())
     logger = utils.Logger(os.path.join(output, 'log.txt'))
     best_eval_score = 0
+    total_steps = 0
 
     for epoch in range(num_epochs):
         total_loss = 0
@@ -34,6 +35,7 @@ def train(model, train_loader, eval_loader, num_epochs, output):
         t = time.time()
 
         for i, (v, b, q, a) in enumerate(train_loader):
+            total_steps += 1
             v = Variable(v).cuda()
             b = Variable(b).cuda()
             q = Variable(q).cuda()
@@ -55,9 +57,12 @@ def train(model, train_loader, eval_loader, num_epochs, output):
             total_loss += loss.item() * v.size(0)
             train_score += batch_score
 
-            model.train(False)
-            eval_score, bound = evaluate(model, eval_loader)
-            model.train(True)
+            if total_steps % 500 == 0:
+                logger.write('\ttrain_loss: %.2f, steps:%.2f ' % (total_loss, total_steps))
+
+                model.train(False)
+                eval_score, bound = evaluate(model, eval_loader)
+                model.train(True)
 
         total_loss /= len(train_loader.dataset)
         train_score = 100 * train_score / len(train_loader.dataset)
@@ -79,6 +84,8 @@ def evaluate(model, dataloader):
     score = 0
     upper_bound = 0
     num_data = 0
+
+    print('evaluating....')
 
     with torch.no_grad():
         for v, b, q, a in iter(dataloader):
