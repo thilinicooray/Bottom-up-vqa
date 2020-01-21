@@ -73,7 +73,7 @@ def train(model, train_loader, eval_loader, num_epochs, output):
         logger.write('\teval score: %.2f (%.2f)' % (100 * eval_score, 100 * bound))
 
         if eval_score > best_eval_score:
-            model_path = os.path.join(output, 'model.pth')
+            model_path = os.path.join(output, 'tda_model.pth')
             torch.save(model.state_dict(), model_path)
             best_eval_score = eval_score
 
@@ -87,9 +87,9 @@ def evaluate(model, dataloader):
 
     with torch.no_grad():
         for v, b, q, a in iter(dataloader):
-            v = Variable(v, volatile=True).cuda()
-            b = Variable(b, volatile=True).cuda()
-            q = Variable(q, volatile=True).cuda()
+            v = Variable(v).cuda()
+            b = Variable(b).cuda()
+            q = Variable(q).cuda()
 
             v = v.contiguous().view(-1, v.size(2), v.size(3))
             b = b.contiguous().view(-1, b.size(2), b.size(3))
