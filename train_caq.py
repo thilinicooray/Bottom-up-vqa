@@ -151,7 +151,5 @@ def evaluate(model, dataloader):
             upper_bound += (a.max(1)[0]).sum()
             num_data += pred.size(0)
 
-            print('eval score: %.2f (%.2f)' % (100 * score, 100 * upper_bound))
-
     upper_bound = upper_bound / len(dataloader.dataset)
     return score, upper_bound
