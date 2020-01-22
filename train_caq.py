@@ -79,10 +79,8 @@ def train(model, train_loader, eval_loader, num_epochs, output):
 
             train_count += batch_count
 
-            if total_steps % 4 == 0:
+            if total_steps % 500 == 0:
                 logger.write('train_loss: %.2f, steps:%.2f ' % (total_loss, total_steps))
-
-            break
 
 
         total_loss /= len(train_loader.dataset)
@@ -159,8 +157,6 @@ def evaluate(model, dataloader):
 
             upper_bound += (a.max(1)[0]).sum()
             num_data += pred.size(0)
-
-            break
 
     score = score / count
 
