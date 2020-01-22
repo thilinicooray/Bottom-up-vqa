@@ -34,12 +34,9 @@ def compute_score_with_logits_paddingremoved(logits, labels):
 
     non_padded = torch.index_select(scores.sum(1), 0, non_padding_idx.squeeze())
 
-    print('scores', scores.sum(1))
-    print('padded :', non_padded.size(), non_padded)
+    final_score = non_padded.sum()
 
-    final_score = non_padded.sum()/non_padded.size(0)
-
-    return final_score
+    return final_score, non_padded.size(0)
 
 
 def train(model, train_loader, eval_loader, num_epochs, output):
@@ -128,6 +125,7 @@ def train(model, train_loader, eval_loader, num_epochs, output):
 
 def evaluate(model, dataloader):
     score = 0
+    count = 0
     upper_bound = 0
     num_data = 0
 
@@ -145,10 +143,12 @@ def evaluate(model, dataloader):
             a = a.contiguous().view(-1, a.size(2))
 
             pred = model(v, b, q, None)
-            batch_score = compute_score_with_logits_paddingremoved(pred, a.cuda()).sum()
+            batch_score, batch_count = compute_score_with_logits_paddingremoved(pred, a.cuda())
             score += batch_score
+            count += batch_count
             upper_bound += (a.max(1)[0]).sum()
             num_data += pred.size(0)
 
+    score = score / count
     upper_bound = upper_bound / len(dataloader.dataset)
     return score, upper_bound
