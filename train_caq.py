@@ -34,6 +34,9 @@ def compute_score_with_logits_paddingremoved(logits, labels):
 
     non_padded = torch.index_select(scores.sum(1), 0, non_padding_idx.squeeze())
 
+    print('scores', scores.sum(1))
+    print('padded :', non_padded.size(), non_padded)
+
     final_score = non_padded.sum()/non_padded.size(0)
 
     return final_score
