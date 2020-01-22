@@ -21,6 +21,28 @@ def compute_score_with_logits(logits, labels):
     scores = (one_hots * labels)
     return scores
 
+def compute_score_with_logits_paddingremoved(logits, labels):
+    logits = torch.max(logits, 1)[1].data # argmax
+    one_hots = torch.zeros(*labels.size()).cuda()
+    one_hots.scatter_(1, logits.view(-1, 1), 1)
+    scores = (one_hots * labels)
+
+    max_labels = torch.max(labels, 1)[1]
+    print('mini batch labels ', max_labels)
+
+    non_padding_idx = (max_labels != (len(labels)-1)).nonzero()
+    print('non padded idx ', non_padding_idx)
+
+    non_padded = torch.index_select(scores, 0, non_padding_idx)
+
+    print('non padded scores ', non_padded)
+
+    final_score = non_padded.sum()/non_padded.size(0)
+
+    print('sizes of labels, non-padding, scores', labels.size(), non_padded.size(), scores.size())
+
+    return final_score
+
 
 def train(model, train_loader, eval_loader, num_epochs, output):
     print('training started !')
@@ -78,7 +100,7 @@ def train(model, train_loader, eval_loader, num_epochs, output):
             best_eval_score = eval_score
 
 
-def evaluate(model, dataloader):
+'''def evaluate(model, dataloader):
     score = 0
     upper_bound = 0
     num_data = 0
@@ -103,5 +125,32 @@ def evaluate(model, dataloader):
             num_data += pred.size(0)
 
     score = score / len(dataloader.dataset)
+    upper_bound = upper_bound / len(dataloader.dataset)
+    return score, upper_bound'''
+
+def evaluate(model, dataloader):
+    score = 0
+    upper_bound = 0
+    num_data = 0
+
+    print('evaluating....')
+
+    with torch.no_grad():
+        for v, b, q, a in iter(dataloader):
+            v = Variable(v).cuda()
+            b = Variable(b).cuda()
+            q = Variable(q).cuda()
+
+            v = v.contiguous().view(-1, v.size(2), v.size(3))
+            b = b.contiguous().view(-1, b.size(2), b.size(3))
+            q = q.contiguous().view(-1, q.size(2))
+            a = a.contiguous().view(-1, a.size(2))
+
+            pred = model(v, b, q, None)
+            batch_score = compute_score_with_logits_paddingremoved(pred, a.cuda()).sum()
+            score += batch_score
+            upper_bound += (a.max(1)[0]).sum()
+            num_data += pred.size(0)
+
     upper_bound = upper_bound / len(dataloader.dataset)
     return score, upper_bound

@@ -6,6 +6,7 @@ import numpy as np
 from PIL import Image
 import torch
 import torch.nn as nn
+import pdb
 
 
 EPS = 1e-7
@@ -69,6 +70,34 @@ def create_dir(path):
         except OSError as exc:
             if exc.errno != errno.EEXIST:
                 raise
+
+def load_net(fname, net_list, prefix_list = None):
+    '''
+    loading a pretrained model weights from a file
+    '''
+    need_modification = False
+    if prefix_list is not None and len(prefix_list) > 0:
+        need_modification = True
+    for i in range(0, len(net_list)):
+        if not torch.cuda.is_available():
+            dict = torch.load(fname, map_location='cpu')
+        else:
+            dict = torch.load(fname)
+
+        try:
+            for k, v in net_list[i].state_dict().items():
+                if need_modification:
+                    k = prefix_list[i] + '.' + k
+
+                if k in dict:
+                    param = torch.from_numpy(np.asarray(dict[k].cpu()))
+                    v.copy_(param)
+                else:
+                    print('[Missed]: {}'.format(k), v.size())
+        except Exception as e:
+            print(e)
+            pdb.set_trace()
+            print ('[Loaded net not complete] Parameter[{}] Size Mismatch...'.format(k))
 
 
 class Logger(object):
