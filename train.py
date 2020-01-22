@@ -37,6 +37,8 @@ def compute_score_with_logits_paddingremoved(logits, labels):
 
     print('non padded scores ', non_padded)
 
+    print('sizes of labels, non-padding, scores', labels.size(), non_padded.size(), scores.size())
+
     final_score = non_padded.sum()/non_padded.size(0)
 
     print('sizes of labels, non-padding, scores', labels.size(), non_padded.size(), scores.size())
