@@ -28,23 +28,18 @@ def compute_score_with_logits_paddingremoved(logits, labels):
     one_hots.scatter_(1, logits.view(-1, 1), 1)
     scores = (one_hots * labels)
 
-    print('sizes of labels ', logits.size(), one_hots.size(), labels.size(), scores.size())
-
     max_labels = torch.max(labels, 1)[1]
-    print('mini batch labels ', max_labels.size(), max_labels)
+
+    print(max_labels[:5])
 
     non_padding_idx = (max_labels != (labels.size(1)-1)).nonzero()
-    print('non padded idx ', non_padding_idx.size(), non_padding_idx)
+    print(non_padding_idx, scores[:5])
 
     non_padded = torch.index_select(scores.sum(1), 0, non_padding_idx.squeeze())
 
-    print('non padded scores ', non_padded)
-
-    print('sizes of labels, non-padding, scores', labels.size(), non_padded.size(), scores.size())
+    print(non_padded.size(), non_padded)
 
     final_score = non_padded.sum()/non_padded.size(0)
-
-    print('sizes of labels, non-padding, scores', labels.size(), non_padded.size(), scores.size())
 
     return final_score
 
