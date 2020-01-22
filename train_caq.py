@@ -34,12 +34,7 @@ def compute_score_with_logits_paddingremoved(logits, labels):
 
     non_padded = torch.index_select(scores.sum(1), 0, non_padding_idx.squeeze())
 
-    print('scores', scores.sum(1))
-    print('padded :', non_padded.size(), non_padded)
-
     final_score = non_padded.sum()/non_padded.size(0)
-
-    print('final score :', final_score)
 
     return final_score
 
@@ -157,7 +152,7 @@ def evaluate(model, dataloader):
 
             score += batch_score
 
-            print('cumulative score :', score)
+            print('cumulative score :', score, len(dataloader.dataset))
 
             upper_bound += (a.max(1)[0]).sum()
             num_data += pred.size(0)
