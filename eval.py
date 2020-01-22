@@ -5,8 +5,8 @@ from torch.utils.data import DataLoader
 import numpy as np
 
 from dataset_grouped import Dictionary, VQAFeatureDataset
-import base_model
-from train import evaluate
+import caq_model
+from train_caq import evaluate
 import utils
 
 
@@ -15,7 +15,7 @@ def parse_args():
     parser.add_argument('--epochs', type=int, default=30)
     parser.add_argument('--num_hid', type=int, default=1024)
     parser.add_argument('--pretrained_model', type=str, default='', help='The model we evaluate from')
-    parser.add_argument('--model', type=str, default='baseline0_newatt')
+    parser.add_argument('--model', type=str, default='caq_newatt')
     parser.add_argument('--output', type=str, default='saved_models/exp0')
     parser.add_argument('--batch_size', type=int, default=64)
     parser.add_argument('--seed', type=int, default=1111, help='random seed')
@@ -36,7 +36,7 @@ if __name__ == '__main__':
     batch_size = args.batch_size
 
     constructor = 'build_%s' % args.model
-    model = getattr(base_model, constructor)(train_dset, args.num_hid).cuda()
+    model = getattr(caq_model, constructor)(train_dset, args.num_hid).cuda()
 
     model = nn.DataParallel(model).cuda()
 
