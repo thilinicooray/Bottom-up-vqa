@@ -50,6 +50,7 @@ def train(model, train_loader, eval_loader, num_epochs, output):
     for epoch in range(num_epochs):
         total_loss = 0
         train_score = 0
+        train_count = 0
         t = time.time()
 
         for i, (v, b, q, a, m) in enumerate(train_loader):
@@ -72,16 +73,20 @@ def train(model, train_loader, eval_loader, num_epochs, output):
             optim.step()
             optim.zero_grad()
 
-            batch_score = compute_score_with_logits(pred, a.data).sum()
+            batch_score, batch_count = compute_score_with_logits_paddingremoved(pred, a.cuda())
             total_loss += loss.item() * v.size(0)
             train_score += batch_score
 
-            if total_steps % 500 == 0:
+            train_count += batch_count
+
+            if total_steps % 4 == 0:
                 logger.write('train_loss: %.2f, steps:%.2f ' % (total_loss, total_steps))
+
+            break
 
 
         total_loss /= len(train_loader.dataset)
-        train_score = 100 * train_score / len(train_loader.dataset)
+        train_score = 100 * train_score / train_count
         model.train(False)
         eval_score, bound = evaluate(model, eval_loader)
         model.train(True)
@@ -155,7 +160,9 @@ def evaluate(model, dataloader):
             upper_bound += (a.max(1)[0]).sum()
             num_data += pred.size(0)
 
+            break
+
     score = score / count
 
-    upper_bound = upper_bound / len(dataloader.dataset)
+    upper_bound = upper_bound / count
     return score, upper_bound
