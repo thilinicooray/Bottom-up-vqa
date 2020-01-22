@@ -4,7 +4,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 import numpy as np
 
-from dataset_grouped import Dictionary, VQAFeatureDataset
+from dataset_grouped import Dictionary, VQAFeatureDataset_withmask
 import caq_model
 from train_caq import evaluate
 import utils
@@ -31,8 +31,8 @@ if __name__ == '__main__':
     torch.backends.cudnn.benchmark = True
 
     dictionary = Dictionary.load_from_file('data/dictionary.pkl')
-    train_dset = VQAFeatureDataset('train', dictionary)
-    eval_dset = VQAFeatureDataset('val', dictionary)
+    train_dset = VQAFeatureDataset_withmask('train', dictionary)
+    eval_dset = VQAFeatureDataset_withmask('val', dictionary)
     batch_size = args.batch_size
 
     constructor = 'build_%s' % args.model
