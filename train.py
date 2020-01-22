@@ -22,12 +22,13 @@ def compute_score_with_logits(logits, labels):
     return scores
 
 def compute_score_with_logits_paddingremoved(logits, labels):
+
     logits = torch.max(logits, 1)[1].data # argmax
     one_hots = torch.zeros(*labels.size()).cuda()
     one_hots.scatter_(1, logits.view(-1, 1), 1)
     scores = (one_hots * labels)
 
-    print('sizes of labels ', labels.size(), scores.size())
+    print('sizes of labels ', logits.size(), one_hots.size(), labels.size(), scores.size())
 
     max_labels = torch.max(labels, 1)[1]
     print('mini batch labels ', max_labels.size(), max_labels)
@@ -35,7 +36,7 @@ def compute_score_with_logits_paddingremoved(logits, labels):
     non_padding_idx = (max_labels != (labels.size(1)-1)).nonzero()
     print('non padded idx ', non_padding_idx.size(), non_padding_idx)
 
-    non_padded = torch.index_select(scores, 0, non_padding_idx)
+    non_padded = torch.index_select(scores.sum(1), 0, non_padding_idx.squeeze())
 
     print('non padded scores ', non_padded)
 
