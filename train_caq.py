@@ -39,6 +39,8 @@ def compute_score_with_logits_paddingremoved(logits, labels):
 
     final_score = non_padded.sum()/non_padded.size(0)
 
+    print('final score :', final_score)
+
     return final_score
 
 
@@ -150,7 +152,13 @@ def evaluate(model, dataloader):
 
             pred = model(v, b, q, None, m)
             batch_score = compute_score_with_logits_paddingremoved(pred, a.cuda()).sum()
+
+            print('batch score:', batch_score)
+
             score += batch_score
+
+            print('cumulative score :', score)
+
             upper_bound += (a.max(1)[0]).sum()
             num_data += pred.size(0)
 
