@@ -27,6 +27,8 @@ def compute_score_with_logits_paddingremoved(logits, labels):
     one_hots.scatter_(1, logits.view(-1, 1), 1)
     scores = (one_hots * labels)
 
+    print('sizes of labels ', labels.size(), scores.size())
+
     max_labels = torch.max(labels, 1)[1]
     print('mini batch labels ', max_labels)
 
