@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 import numpy as np
+import math
 
 from dataset_grouped import Dictionary, VQAFeatureDataset_withmask
 import caq_model
@@ -40,6 +41,9 @@ if __name__ == '__main__':
 
     model = nn.DataParallel(model).cuda()
 
-    train_loader = DataLoader(train_dset, batch_size, shuffle=True, num_workers=1)
+    seventyfive = list(range(0, int(math.ceil(len(train_dset) * 0.75))))
+    trainset_1 = torch.utils.data.Subset(train_dset, seventyfive)
+
+    train_loader = DataLoader(trainset_1, batch_size, shuffle=True, num_workers=1)
     eval_loader =  DataLoader(eval_dset, batch_size, shuffle=True, num_workers=1)
     train(model, train_loader, eval_loader, args.epochs, args.output)
