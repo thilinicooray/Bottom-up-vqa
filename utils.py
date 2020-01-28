@@ -99,6 +99,16 @@ def load_net(fname, net_list, prefix_list = None):
             pdb.set_trace()
             print ('[Loaded net not complete] Parameter[{}] Size Mismatch...'.format(k))
 
+def set_trainable(model, requires_grad):
+    '''
+    set model parameters' training mode on/off
+    '''
+    set_trainable_param(model.parameters(), requires_grad)
+
+def set_trainable_param(parameters, requires_grad):
+    for param in parameters:
+        param.requires_grad = requires_grad
+
 
 class Logger(object):
     def __init__(self, output_name):

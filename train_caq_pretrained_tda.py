@@ -42,7 +42,7 @@ def compute_score_with_logits_paddingremoved(logits, labels):
 def train(model, train_loader, eval_loader, num_epochs, output):
     print('training started !')
     utils.create_dir(output)
-    optim = torch.optim.Adamax(model.parameters())
+    optim = torch.optim.Adamax(filter(lambda p: p.requires_grad, model.parameters()))
     logger = utils.Logger(os.path.join(output, 'log.txt'))
     best_eval_score = 0
     total_steps = 0
@@ -94,7 +94,7 @@ def train(model, train_loader, eval_loader, num_epochs, output):
         logger.write('\teval score: %.2f (%.2f)' % (100 * eval_score, 100 * bound))
 
         if eval_score > best_eval_score:
-            model_path = os.path.join(output, 'caq_model_.pth')
+            model_path = os.path.join(output, 'caq_model_pretrained_tda.pth')
             torch.save(model.state_dict(), model_path)
             best_eval_score = eval_score
 

@@ -38,6 +38,27 @@ class BaseModel(nn.Module):
 
         return logits
 
+    def forward_hiddenrep(self, v, b, q, labels):
+        """Forward
+
+        v: [batch, num_objs, obj_dim]
+        b: [batch, num_objs, b_dim]
+        q: [batch_size, seq_length]
+
+        return: logits, not probs
+        """
+        w_emb = self.w_emb(q)
+        q_emb = self.q_emb(w_emb) # [batch, q_dim]
+
+        att = self.v_att(v, q_emb)
+        v_emb = (att * v).sum(1) # [batch, v_dim]
+
+        q_repr = self.q_net(q_emb)
+        v_repr = self.v_net(v_emb)
+        joint_repr = q_repr * v_repr
+
+        return joint_repr
+
 
 def build_baseline0(dataset, num_hid):
     w_emb = WordEmbedding(dataset.dictionary.ntoken, 300, 0.0)
