@@ -43,7 +43,7 @@ if __name__ == '__main__':
     model = getattr(pretrained_tda_caq_model, constructor)(train_dset, args.num_hid, baseline).cuda()
     model.w_emb.init_embedding('data/glove6b_init_300d.npy')
 
-    utils.load_net(args.pretrained_tda_model, [model.tda_model])
+    utils.load_net(args.pretrained_tda_model, [model.tda_model], ['module'])
 
     utils.set_trainable(model.tda_model, False)
 
