@@ -136,7 +136,7 @@ def evaluate(model, dataloader):
     num_data = 0
     count = 0
 
-    N = len(dataloader.dataset)* model.dataset.max_q_count
+    N = len(dataloader.dataset)* dataloader.dataset.max_q_count
     M = dataloader.dataset.num_ans_candidates + 1
     pred_all = torch.FloatTensor(N, M).zero_()
     qIds = torch.IntTensor(N).zero_()
