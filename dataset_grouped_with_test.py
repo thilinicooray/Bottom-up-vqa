@@ -122,7 +122,7 @@ def _load_dataset(dataroot, name, img_id2val):
 class VQAFeatureDataset(Dataset):
     def __init__(self, name, dictionary, dataroot='data'):
         super(VQAFeatureDataset, self).__init__()
-        assert name in ['train', 'val']
+        assert name in ['train', 'val', 'test-dev2015', 'test2015']
 
         ans2label_path = os.path.join(dataroot, 'cache', 'trainval_ans2label.pkl')
         label2ans_path = os.path.join(dataroot, 'cache', 'trainval_label2ans.pkl')
@@ -195,7 +195,6 @@ class VQAFeatureDataset(Dataset):
         tot_spatials = []
         tot_questions = []
         tot_targets = []
-        tot_q_ids = []
         max_length = 14
 
         for entry_id in entries:
@@ -204,7 +203,6 @@ class VQAFeatureDataset(Dataset):
             spatials = self.spatials[entry['image']]
 
             question = entry['q_token']
-            q_id = entry['question_id']
             answer = entry['answer']
             labels = answer['labels']
             scores = answer['scores']
@@ -216,7 +214,6 @@ class VQAFeatureDataset(Dataset):
             tot_spatials.append(spatials)
             tot_questions.append(question)
             tot_targets.append(target)
-            tot_q_ids.append(q_id)
 
         padding_count = self.max_q_count - len(entries)
 
@@ -233,9 +230,8 @@ class VQAFeatureDataset(Dataset):
             tot_spatials.append(spatials)
             tot_questions.append(torch.tensor(question))
             tot_targets.append(target)
-            tot_q_ids.append(-1)
 
-        return torch.stack(tot_features,0), torch.stack(tot_spatials,0), torch.stack(tot_questions,0), torch.stack(tot_targets,0), tot_q_ids
+        return torch.stack(tot_features,0), torch.stack(tot_spatials,0), torch.stack(tot_questions,0), torch.stack(tot_targets,0)
 
     def __len__(self):
         return len(self.img2q)
@@ -243,7 +239,7 @@ class VQAFeatureDataset(Dataset):
 class VQAFeatureDataset_withmask(Dataset):
     def __init__(self, name, dictionary, dataroot='data'):
         super(VQAFeatureDataset_withmask, self).__init__()
-        assert name in ['train', 'val']
+        assert name in ['train', 'val', 'test-dev2015', 'test2015']
 
         ans2label_path = os.path.join(dataroot, 'cache', 'trainval_ans2label.pkl')
         label2ans_path = os.path.join(dataroot, 'cache', 'trainval_label2ans.pkl')
@@ -316,7 +312,6 @@ class VQAFeatureDataset_withmask(Dataset):
         tot_spatials = []
         tot_questions = []
         tot_targets = []
-        tot_q_ids = []
         max_length = 14
 
         for entry_id in entries:
@@ -325,7 +320,6 @@ class VQAFeatureDataset_withmask(Dataset):
             spatials = self.spatials[entry['image']]
 
             question = entry['q_token']
-            q_id = entry['question_id']
             answer = entry['answer']
             labels = answer['labels']
             scores = answer['scores']
@@ -337,7 +331,6 @@ class VQAFeatureDataset_withmask(Dataset):
             tot_spatials.append(spatials)
             tot_questions.append(question)
             tot_targets.append(target)
-            tot_q_ids.append(q_id)
 
         padding_count = self.max_q_count - len(entries)
 
@@ -354,7 +347,6 @@ class VQAFeatureDataset_withmask(Dataset):
             tot_spatials.append(spatials)
             tot_questions.append(torch.tensor(question))
             tot_targets.append(target)
-            tot_q_ids.append(-1)
 
         imgq_encoding = torch.zeros(self.max_q_count)
         imgq_encoding[:len(entries)] = 1
@@ -369,8 +361,7 @@ class VQAFeatureDataset_withmask(Dataset):
             cur_idx = len(entries) + idx
             adj[cur_idx][cur_idx] = 1
 
-        return torch.stack(tot_features,0), torch.stack(tot_spatials,0), torch.stack(tot_questions,0), \
-               torch.stack(tot_targets,0), adj.type(torch.FloatTensor), tot_q_ids
+        return torch.stack(tot_features,0), torch.stack(tot_spatials,0), torch.stack(tot_questions,0), torch.stack(tot_targets,0), adj.type(torch.FloatTensor)
 
     def __len__(self):
         return len(self.img2q)
