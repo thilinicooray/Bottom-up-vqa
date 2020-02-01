@@ -16,8 +16,10 @@ def make_json(logits, qIds, dataloader):
     for i in range(logits.size(0)):
         result = {}
         result['question_id'] = qIds[i].item()
-        result['answer'] = get_answer(logits[i], dataloader)
-        results.append(result)
+
+        if result['question_id'] != -1:
+            result['answer'] = get_answer(logits[i], dataloader)
+            results.append(result)
     return results
 
 def get_answer(p, dataloader):
@@ -68,5 +70,5 @@ if __name__ == '__main__':
     results = make_json(pred_all, qIds, eval_loader)
 
     with open(args.output+'/%s_%s.json' \
-            % (eval, args.model), 'w') as f:
+            % ('eval', args.model), 'w') as f:
         json.dump(results, f)
