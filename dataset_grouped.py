@@ -235,7 +235,7 @@ class VQAFeatureDataset(Dataset):
             tot_targets.append(target)
             tot_q_ids.append(-1)
 
-        return torch.stack(tot_features,0), torch.stack(tot_spatials,0), torch.stack(tot_questions,0), torch.stack(tot_targets,0), tot_q_ids
+        return torch.stack(tot_features,0), torch.stack(tot_spatials,0), torch.stack(tot_questions,0), torch.stack(tot_targets,0), torch.stack(tot_q_ids,0)
 
     def __len__(self):
         return len(self.img2q)
@@ -370,7 +370,7 @@ class VQAFeatureDataset_withmask(Dataset):
             adj[cur_idx][cur_idx] = 1
 
         return torch.stack(tot_features,0), torch.stack(tot_spatials,0), torch.stack(tot_questions,0), \
-               torch.stack(tot_targets,0), adj.type(torch.FloatTensor), tot_q_ids
+               torch.stack(tot_targets,0), adj.type(torch.FloatTensor), torch.stack(tot_q_ids,0)
 
     def __len__(self):
         return len(self.img2q)
