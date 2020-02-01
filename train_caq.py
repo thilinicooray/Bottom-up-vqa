@@ -159,6 +159,7 @@ def evaluate(model, dataloader):
             b = b.contiguous().view(-1, b.size(2), b.size(3))
             q = q.contiguous().view(-1, q.size(2))
             a = a.contiguous().view(-1, a.size(2))
+            qid_set = qid_set.contiguous().view(-1)
 
             batch_size = v.size(0)
 
