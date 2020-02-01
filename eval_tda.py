@@ -3,11 +3,28 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 import numpy as np
+import json
 
 from dataset_grouped import Dictionary, VQAFeatureDataset
 import base_model
 from train import evaluate
 import utils
+
+def make_json(logits, qIds, dataloader):
+    utils.assert_eq(logits.size(0), len(qIds))
+    results = []
+    for i in range(logits.size(0)):
+        result = {}
+        result['question_id'] = qIds[i].item()
+
+        if result['question_id'] != -1:
+            result['answer'] = get_answer(logits[i], dataloader)
+            results.append(result)
+    return results
+
+def get_answer(p, dataloader):
+    _m, idx = p.max(0)
+    return dataloader.dataset.label2ans[idx.item()]
 
 
 def parse_args():
@@ -46,7 +63,13 @@ if __name__ == '__main__':
 
     utils.load_net(args.pretrained_model, [model])
 
-    eval_score, bound = evaluate(model, eval_loader)
+    eval_score, bound, pred_all, qIds = evaluate(model, eval_loader)
 
     print('eval score: %.2f (%.2f)' % (100 * eval_score, 100 * bound))
+
+    results = make_json(pred_all, qIds, eval_loader)
+
+    with open(args.output+'/%s_%s.json' \
+            % ('eval', args.model), 'w') as f:
+        json.dump(results, f)
 

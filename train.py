@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 import utils
 from torch.autograd import Variable
+import progressbar
 
 
 def instance_bce_with_logits(logits, labels):
@@ -53,7 +54,7 @@ def train(model, train_loader, eval_loader, num_epochs, output):
         train_count = 0
         t = time.time()
 
-        for i, (v, b, q, a) in enumerate(train_loader):
+        for i, (v, b, q, a, qid_set) in enumerate(train_loader):
             total_steps += 1
             v = Variable(v).cuda()
             b = Variable(b).cuda()
@@ -131,10 +132,20 @@ def evaluate(model, dataloader):
     upper_bound = 0
     num_data = 0
 
+    N = len(dataloader.dataset)* dataloader.dataset.max_q_count
+    M = dataloader.dataset.num_ans_candidates + 1
+    pred_all = torch.FloatTensor(N, M).zero_()
+    qIds = torch.IntTensor(N).zero_()
+    idx = 0
+    bar = progressbar.ProgressBar(max_value=N)
+
     print('evaluating....')
 
     with torch.no_grad():
-        for v, b, q, a in iter(dataloader):
+        for v, b, q, a, qid_set in iter(dataloader):
+
+            bar.update(idx)
+
             v = Variable(v).cuda()
             b = Variable(b).cuda()
             q = Variable(q).cuda()
@@ -143,14 +154,24 @@ def evaluate(model, dataloader):
             b = b.contiguous().view(-1, b.size(2), b.size(3))
             q = q.contiguous().view(-1, q.size(2))
             a = a.contiguous().view(-1, a.size(2))
+            qid_set = qid_set.contiguous().view(-1)
+
+            batch_size = v.size(0)
 
             pred = model(v, b, q, None)
+
+            pred_all[idx:idx+batch_size,:].copy_(pred.data)
+            qIds[idx:idx+batch_size].copy_(qid_set)
+            idx += batch_size
+
             batch_score, batch_count = compute_score_with_logits_paddingremoved(pred, a.cuda())
             score += batch_score
             count += batch_count
             upper_bound += (a.max(1)[0]).sum()
             num_data += pred.size(0)
 
+        bar.update(idx)
+
     score = score / count
     upper_bound = upper_bound / count
-    return score, upper_bound
+    return score, upper_bound, pred_all, qIds
