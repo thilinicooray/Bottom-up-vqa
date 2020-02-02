@@ -11,7 +11,7 @@ quesFile    ='data/v2_OpenEnded_mscoco_val2014_questions.json'
 fileTypes   = ['results', 'accuracy', 'evalQA', 'evalQuesType', 'evalAnsType']
 
 # An example result json file has been provided in './Results' folder.
-resFile = 'saved_models/exp0/eval_baseline0_newatt.json'
+resFile = 'saved_models/exp0/eval_caq_newatt.json'
 
 # create vqa object and vqaRes object
 vqa = VQA(annFile, quesFile)

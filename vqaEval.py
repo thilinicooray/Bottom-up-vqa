@@ -118,7 +118,7 @@ class VQAEval:
                 self.updateProgress(step/float(len(quesIds)))
             step = step + 1
 
-        with open('all_res_tda.json', 'w') as f:
+        with open('all_res_caq.json', 'w') as f:
             json.dump(overall, f, indent=4)
 
         self.setAccuracy(accQA, accQuesType, accAnsType)
