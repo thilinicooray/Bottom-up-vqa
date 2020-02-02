@@ -1,5 +1,6 @@
 import sys
 import re
+import json
 
 class VQAEval:
     def __init__(self, vqa, vqaRes, n=2):
@@ -74,6 +75,7 @@ class VQAEval:
         accQA       = []
         accQuesType = {}
         accAnsType  = {}
+        overall = {}
         print ("computing accuracy")
         step = 0
         for quesId in quesIds:
@@ -96,6 +98,12 @@ class VQAEval:
             quesType    = gts[quesId]['question_type']
             ansType     = gts[quesId]['answer_type']
             avgGTAcc = float(sum(gtAcc))/len(gtAcc)
+
+            overall[quesId] = False
+            if avgGTAcc > 0:
+                overall[quesId] = True
+
+
             accQA.append(avgGTAcc)
             if quesType not in accQuesType:
                 accQuesType[quesType] = []
@@ -109,6 +117,9 @@ class VQAEval:
             if step%100 == 0:
                 self.updateProgress(step/float(len(quesIds)))
             step = step + 1
+
+        with open('all_res_tda.json', 'w') as f:
+            json.dump(overall, f, indent=4)
 
         self.setAccuracy(accQA, accQuesType, accAnsType)
         print ("Done computing accuracy")
